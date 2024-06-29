@@ -1,1 +1,1 @@
-readme file of HBNB V2
+Airbnb clone readme file
