@@ -1,57 +1,55 @@
 #!/usr/bin/python3
-"""defines the BaseModel class."""
-import models
-from uuid import uuid4
-from datetime import datetime
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column
-from sqlalchemy import DateTime
-from sqlalchemy import String
+"""This file contain the parent class BaseModel"""
 
-Base = declarative_base()
+import uuid
+from datetime import datetime
+import models
 
 
 class BaseModel:
-    """defines the BaseModel class."""
-
-    id = Column(String(60), primary_key=True, nullable=False)
-    created_at = Column(DateTime, nullable=False, default=datetime.utcnow())
-    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow())
-
+    """BaseModel class"""
     def __init__(self, *args, **kwargs):
-        """initialize a new BaseModel."""
-
-        self.id = str(uuid4())
-        self.created_at = self.updated_at = datetime.utcnow()
-        if kwargs:
+        """
+        __init__ constructor method of the class
+        """
+        if kwargs != {}:
             for key, value in kwargs.items():
                 if key == "created_at" or key == "updated_at":
-                    value = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%f")
+                    val = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%f")
+                    setattr(self, key, val)
+                    continue
                 if key != "__class__":
                     setattr(self, key, value)
+        else:
+            self.id = str(uuid.uuid4())
+            self.created_at = datetime.now()
+            self.updated_at = datetime.now()
+            models.storage.new(self)
+
+    def __str__(self):
+        """__str__ method that returns string representation of the instance
+        Returns:
+        [str]: instance of BaseModel string representation"""
+        st = "[{:s}] ({:s}) {}"
+        return st.format(type(self).__name__, self.id, self.__dict__)
 
     def save(self):
-        """update updated_at with the current datetime."""
-        self.updated_at = datetime.utcnow()
-        models.storage.new(self)
+        """
+        save method that saves instance information in JSON file
+        """
+        self.updated_at = datetime.now()
         models.storage.save()
 
     def to_dict(self):
-        """Return a dictionary representation of the BaseModel instance."""
+        """
+        to_dict method that return dictionary representation of the instance
 
-        my_dict = self.__dict__.copy()
-        my_dict["__class__"] = str(type(self).__name__)
-        my_dict["created_at"] = self.created_at.isoformat()
-        my_dict["updated_at"] = self.updated_at.isoformat()
-        my_dict.pop("_sa_instance_state", None)
-        return my_dict
+        Returns:
+            [dict]: dictionary with information about the BaseModel instance
+        """
+        new = dict(self.__dict__)
+        new["__class__"] = type(self).__name__
+        new["created_at"] = new["created_at"].isoformat()
+        new["updated_at"] = new["updated_at"].isoformat()
 
-    def delete(self):
-        """Delete the current instance from storage."""
-        models.storage.delete(self)
-
-    def __str__(self):
-        """Return the print/str representation of the BaseModel instance."""
-        d = self.__dict__.copy()
-        d.pop("_sa_instance_state", None)
-        return "[{}] ({}) {}".format(type(self).__name__, self.id, d)
+        return new

@@ -1,17 +1,12 @@
 #!/usr/bin/python3
-"""defines the City class."""
-from models.base_model import Base
+"""This file contain the class City"""
+
 from models.base_model import BaseModel
-from sqlalchemy import Column
-from sqlalchemy import ForeignKey
-from sqlalchemy import String
-from sqlalchemy.orm import relationship
 
 
-class City(BaseModel, Base):
-    """represents a city for a MySQL database."""
-
-    __tablename__ = "cities"
-    name = Column(String(128), nullable=False)
-    state_id = Column(String(60), ForeignKey("states.id"), nullable=False)
-    places = relationship("Place", backref="cities", cascade="delete")
+class City(BaseModel):
+    """
+    City class that inherits from BaseModel class
+    """
+    state_id = ""
+    name = ""
